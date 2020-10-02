@@ -12,7 +12,7 @@ resource "aws_db_instance" "db" {
   storage_type                        = "gp2"
   engine                              = "mysql"
   engine_version                      = "5.7"
-  instance_class                      = "db.t2.micro"
+  instance_class                      = "db.m5.xlarge"
   name                                = "mydb"
   username                            = "foo"
   password                            = var.db_password
@@ -25,4 +25,5 @@ resource "aws_db_instance" "db" {
   tags = {
     Name = "${local.prefix.value}-db"
   }
+  backup_retention_period = 30
 }
