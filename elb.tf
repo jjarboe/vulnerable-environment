@@ -16,9 +16,9 @@ resource "aws_elb" "public_elb" {
   connection_draining = true
   listener {
     instance_port     = 80
-    instance_protocol = "http"
+    instance_protocol = "https"
     lb_port           = 80
-    lb_protocol       = "http"
+    lb_protocol       = "https"
   }
 
   tags = {
