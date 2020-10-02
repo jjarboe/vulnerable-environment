@@ -53,3 +53,58 @@ output "vpc_id" {
   description = "The ID of the VPC"
   value       = aws_vpc.vpc.id
 }
+
+resource "aws_flow_log" "vpc" {
+  vpc_id          = "${aws_vpc.vpc.id}"
+  iam_role_arn    = "##arn:aws:iam::111111111111:role/sample_role##"
+  log_destination = "${aws_s3_bucket.vpc.arn}"
+  traffic_type    = "ALL"
+
+  tags = {
+    GeneratedBy      = "Accurics"
+    ParentResourceId = "aws_vpc.vpc"
+  }
+}
+resource "aws_s3_bucket" "vpc" {
+  bucket        = "vpc_flow_log_s3_bucket"
+  acl           = "private"
+  force_destroy = true
+
+  versioning {
+    enabled    = true
+    mfa_delete = true
+  }
+
+  server_side_encryption_configuration {
+    rule {
+      apply_server_side_encryption_by_default {
+        sse_algorithm = "AES256"
+      }
+    }
+  }
+}
+resource "aws_s3_bucket_policy" "vpc" {
+  bucket = "${aws_s3_bucket.vpc.id}"
+
+  policy = <<POLICY
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "vpc-restrict-access-to-users-or-roles",
+      "Effect": "Allow",
+      "Principal": [
+        {
+          "AWS": [
+            "arn:aws:iam::##acount_id##:role/##role_name##",
+            "arn:aws:iam::##acount_id##:user/##user_name##"
+          ]
+        }
+      ],
+      "Action": "s3:GetObject",
+      "Resource": "arn:aws:s3:::${aws_s3_bucket.vpc.id}/*"
+    }
+  ]
+}
+POLICY
+}
